@@ -1,5 +1,12 @@
 import random
 
+def get_best_word(words):
+    possible_words = [(word, len(set(word))) for word in words]
+    possible_words = sorted(possible_words, key=lambda x: x[1], reverse=True)
+    possible_words = [word[0] for word in possible_words if word[1] == possible_words[0][1]]
+
+    return random.choice(possible_words)
+
 def choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words):
     possible_words = []
 
@@ -45,7 +52,7 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
             possible_words.append(word)
     
     # print("Possible words:", possible_words)
-    return [random.choice(possible_words), possible_words]
+    return [get_best_word(possible_words), possible_words]
 
 if __name__ == "__main__":
 
@@ -73,6 +80,12 @@ if __name__ == "__main__":
             word = "crane"
 
             for i in range(12):
+                if word == simulate_word:
+                    average_guesses += i + 1
+                    count += 1
+                    guessed_frequency[i + 1] = guessed_frequency.get(i + 1, 0) + 1
+                    break
+
                 chosen_words.append(word)
 
                 correct_positions.append([position for position in range(5) if simulate_word[position] == word[position]])
@@ -84,12 +97,6 @@ if __name__ == "__main__":
                 incorrect_letters.append([letter for letter in word if simulate_word.count(letter) == 0])
 
                 [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words)
-
-                if word == simulate_word:
-                    average_guesses += i + 1
-                    count += 1
-                    guessed_frequency[i + 1] = guessed_frequency.get(i + 1, 0) + 1
-                    break
             
             guessed_frequency = dict(sorted(guessed_frequency.items()))
 
