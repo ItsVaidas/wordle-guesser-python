@@ -1,8 +1,6 @@
 A simple Python script to guess which word should be in wordle.
 
-Currently it's in simulation mode. You would need to change it a bit to function as required.
-It was made as an experiment, so don't expect good code quality. Sorry about that.
-
+Currently it's in simulation mode. You would need to change that by switching simulation to false in file.
 
 When launching the app it will display the word to enter in wordly.
 After entering it you will need to write information to the app:
