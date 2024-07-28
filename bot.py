@@ -60,14 +60,14 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
     # print("Possible words:", possible_words)
     return random.choice(possible_words)
 
-simulate = True
-
 if __name__ == "__main__":
 
     file = open("la-words.txt", "r")
     words = file.readlines()
 
-    if simulate:
+    simulate = input("Do you want to simulate the game? (y/n): ")
+
+    if simulate == "y":
         count = 0
         average_guesses = 0.0
         guessed_frequency = {}
@@ -124,25 +124,30 @@ if __name__ == "__main__":
 
             print(word)
 
-            input_correct_positions = input("Enter the number of correct positions by comma: ")
+            input_correct_positions = input("Enter correct positions (separated by comma): ")
             if input_correct_positions != "":
                 correct_positions.append(input_correct_positions.split(","))
             else:
                 correct_positions.append([])
 
-            input_incorrect_positions = input("Enter the number of incorrect positions by comma: ")
+            input_incorrect_positions = input("Enter incorrect positions (separated by comma): ")
             if input_incorrect_positions != "":
                 incorrect_positions.append(input_incorrect_positions.split(","))
             else:
                 incorrect_positions.append([])
 
-            input_correct_letters = input("Enter the number of correct letters by comma: ")
-            if input_correct_letters != "":
-                correct_letters.append(input_correct_letters.split(","))
+            current_correct_letters = []
+            for position in correct_positions[-1]:
+                current_correct_letters.append(word[int(position)])
+            for position in incorrect_positions[-1]:
+                current_correct_letters.append(word[int(position)])
+            correct_letters.append(current_correct_letters)
 
-            input_incorrect_letters = input("Enter the number of incorrect letters by comma: ")
-            if input_incorrect_letters != "":
-                incorrect_letters.append(input_incorrect_letters.split(","))
+            current_incorrect_letters = []
+            for position in range(5):
+                if str(position) not in correct_positions[-1] and str(position) not in incorrect_positions[-1]:
+                    current_incorrect_letters.append(word[position])
+            incorrect_letters.append(current_incorrect_letters)
 
             word = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words)
 
