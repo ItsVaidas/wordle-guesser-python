@@ -58,7 +58,7 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
             possible_words.append(word)
     
     # print("Possible words:", possible_words)
-    return random.choice(possible_words)
+    return [random.choice(possible_words), possible_words]
 
 if __name__ == "__main__":
 
@@ -74,6 +74,8 @@ if __name__ == "__main__":
 
         for simulate_word in words:
             simulate_word = simulate_word.strip()
+
+            possible_words = words.copy()
 
             chosen_words = []
             correct_positions = []
@@ -94,7 +96,7 @@ if __name__ == "__main__":
 
                 incorrect_letters.append([letter for letter in word if simulate_word.count(letter) == 0])
 
-                word = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words)
+                [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words)
 
                 if word == simulate_word:
                     average_guesses += i + 1
@@ -117,6 +119,8 @@ if __name__ == "__main__":
         correct_letters = []
         incorrect_letters = []
 
+        possible_words = words.copy()
+
         word = "crane"
 
         print("When asked to enter shown result, please use the following key:")
@@ -128,6 +132,9 @@ if __name__ == "__main__":
 
         for i in range(12):
             chosen_words.append(word)
+
+            if len(possible_words) < 10:
+                print("Possible words:", possible_words)
 
             print("Please write the word: ", word)
 
@@ -158,6 +165,6 @@ if __name__ == "__main__":
             correct_letters.append(current_correct_letters)
             incorrect_letters.append(current_incorrect_letters)
 
-            word = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words)
+            [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words)
 
     
