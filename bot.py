@@ -81,7 +81,7 @@ if __name__ == "__main__":
             correct_letters = []
             incorrect_letters = []
             
-            word = random_word(words)
+            word = "crane"
 
             for i in range(12):
                 chosen_words.append(word)
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         correct_letters = []
         incorrect_letters = []
 
-        word = random_word(words)
+        word = "crane"
 
         for i in range(12):
             chosen_words.append(word)
