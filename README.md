@@ -1,13 +1,25 @@
-A simple Python script to guess which word should be in wordle.
+A simple wordly Python guesser
 
-Currently it's in simulation mode. You would need to change that by switching simulation to false in file.
+App has two dictionaries: wordly with 2315 words and random list with 5757 words.
+All words contain 5 letters.
 
-When launching the app it will display the word to enter in wordly.
-After entering it you will need to write information to the app:
+To launch the app you just need to enter ```python3 bot.py``` to a terminal while being in that directory.
 
-Positions (starting from 0) of which letter are correct (if none, just press enter) (positions needs to be seperated by comma).
-Incorrect possitions (usally displayed by yellow) (seperated by comma).
-Currect letters (letters, that are green and yellow) (seperated by comma).
-Incorrect letters (blacked out letters, that are incorrect) (seperated by comma).
+After launching the app it will ask if you want it to be in a simulation mode "y" or user input mode "n".
+The application then runs in selected mode.
 
-After filling this information it will display another word you need to enter. Repeat this action till you get the correct word.
+Simulation mode:
+Application will begin to test each word in la-words.txt file and try to guess that word. The frequencies will be displayed on screen. When the application finishes up, it will show the average amount of guesses it took to find the word and frequencies of each guess.
+
+Input mode:
+A word will be displayed in the terminal of which word to enter. The first word will always be "CRANE".
+After you enter that word to wordly, you will need to enter additional information:
+* Enter correct positions (separated by comma) - Starting from 0, you will need to enter letter indexes that are in correct position (marked green).
+* Enter incorrect positions (separated by comma) - Starting from 0, you will need to enter letter indexes that are in incorrect positions (marked yellow).
+From it the application will display the second word to enter to wordly.
+Repeat this process until you have been given the correct word.
+
+Performance:
+Current performance of this app is 2.9 average guesses.
+Average guesses:  2.904103671706263
+Guessed frequency:  {1: 145, 2: 700, 3: 903, 4: 412, 5: 116, 6: 32, 7: 7}
