@@ -119,34 +119,43 @@ if __name__ == "__main__":
 
         word = "crane"
 
+        print("When asked to enter shown result, please use the following key:")
+        print("w: Incorrect letter")
+        print("g: Correct letter in correct position")
+        print("y: Correct letter in incorrect position")
+        print("Example: wgywg")
+        print("This means that the first letter is incorrect, the second and fourth letters are correct and in the correct position, and the third and fifth letters are correct but in the wrong position.")
+
         for i in range(12):
             chosen_words.append(word)
 
-            print(word)
+            print("Please write the word: ", word)
 
-            input_correct_positions = input("Enter correct positions (separated by comma): ")
-            if input_correct_positions != "":
-                correct_positions.append(input_correct_positions.split(","))
-            else:
-                correct_positions.append([])
+            input_sequence = input("Enter shown result:\n")
 
-            input_incorrect_positions = input("Enter incorrect positions (separated by comma): ")
-            if input_incorrect_positions != "":
-                incorrect_positions.append(input_incorrect_positions.split(","))
-            else:
-                incorrect_positions.append([])
+            if (input_sequence == "ggggg"):
+                print("Congratulations! I guessed the word in", i + 1, "guesses.")
+                break
 
             current_correct_letters = []
-            for position in correct_positions[-1]:
-                current_correct_letters.append(word[int(position)])
-            for position in incorrect_positions[-1]:
-                current_correct_letters.append(word[int(position)])
-            correct_letters.append(current_correct_letters)
-
+            current_correct_positions = []
+            current_incorrect_positions = []
             current_incorrect_letters = []
-            for position in range(5):
-                if str(position) not in correct_positions[-1] and str(position) not in incorrect_positions[-1]:
-                    current_incorrect_letters.append(word[position])
+            for (index, letter) in enumerate(input_sequence):
+                if letter == "w":
+                    current_incorrect_letters.append(word[index])
+                elif letter == "g":
+                    current_correct_positions.append(index)
+                    current_correct_letters.append(word[index])
+                elif letter == "y":
+                    current_incorrect_positions.append(index)
+                    current_correct_letters.append(word[index])
+                else:
+                    print("Invalid input")
+            
+            correct_positions.append(current_correct_positions)
+            incorrect_positions.append(current_incorrect_positions)
+            correct_letters.append(current_correct_letters)
             incorrect_letters.append(current_incorrect_letters)
 
             word = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words)
