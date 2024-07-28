@@ -32,12 +32,12 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
                     break
         
         if len(incorrect_positions) > 0:
-            last_word_incorrect_positions = incorrect_positions[-1]
+            for index, i_word in enumerate(chosen_words):
+                for position in incorrect_positions[index]:
+                    if word[int(position)] == i_word[int(position)]:
+                        word_is_possible = False
+                        break
 
-            for position in last_word_incorrect_positions:
-                if word[int(position)] == last_word[int(position)]:
-                    word_is_possible = False
-                    break
         
         if len(correct_letters) > 0:
             last_word_correct_letters = correct_letters[-1]
@@ -57,13 +57,14 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
         if word_is_possible:
             possible_words.append(word)
     
+    # print("Possible words:", possible_words)
     return random.choice(possible_words)
 
 simulate = True
 
 if __name__ == "__main__":
 
-    file = open("sgb-words.txt", "r")
+    file = open("la-words.txt", "r")
     words = file.readlines()
 
     if simulate:
@@ -126,10 +127,14 @@ if __name__ == "__main__":
             input_correct_positions = input("Enter the number of correct positions by comma: ")
             if input_correct_positions != "":
                 correct_positions.append(input_correct_positions.split(","))
+            else:
+                correct_positions.append([])
 
             input_incorrect_positions = input("Enter the number of incorrect positions by comma: ")
             if input_incorrect_positions != "":
                 incorrect_positions.append(input_incorrect_positions.split(","))
+            else:
+                incorrect_positions.append([])
 
             input_correct_letters = input("Enter the number of correct letters by comma: ")
             if input_correct_letters != "":
