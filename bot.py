@@ -1,18 +1,5 @@
 import random
 
-def random_word(words):
-    words_with_unique_letters = []
-
-    for word in words:
-        word = word.strip()
-        unique_letters = set(word)
-        words_with_unique_letters.append((word, len(unique_letters)))
-
-    words_with_unique_letters.sort(key=lambda x: x[1], reverse=True)
-    words_with_unique_letters = [word for word, _ in words_with_unique_letters if _ == 5]
-
-    return random.choice(words_with_unique_letters)
-
 def choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words):
     possible_words = []
 
