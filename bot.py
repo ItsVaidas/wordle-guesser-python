@@ -10,10 +10,10 @@ def get_best_word(words):
 def choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words):
     possible_words = []
 
+    last_word = chosen_words[-1]
+
     for word in words:
         word = word.strip()
-
-        last_word = chosen_words[-1]
 
         word_is_possible = True
 
@@ -36,8 +36,12 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
         if len(correct_letters) > 0:
             last_word_correct_letters = correct_letters[-1]
 
+            letters_frequency = {}
             for letter in last_word_correct_letters:
-                if word.count(letter) == 0:
+                letters_frequency[letter] = letters_frequency.get(letter, 0) + 1
+
+            for letter in last_word_correct_letters:
+                if word.count(letter) < letters_frequency[letter]:
                     word_is_possible = False
                     break
         
@@ -92,7 +96,13 @@ if __name__ == "__main__":
 
                 incorrect_positions.append([position for position in range(5) if simulate_word[position] != word[position]])
 
-                correct_letters.append([letter for letter in word if simulate_word.count(letter) > 0])
+                tmp_list = []
+                tmp_simulate_word = simulate_word
+                for letter in word:
+                    if tmp_simulate_word.count(letter) > 0:
+                        tmp_list.append(letter)
+                        tmp_simulate_word = tmp_simulate_word.replace(letter, "", 1)
+                correct_letters.append(tmp_list)
 
                 incorrect_letters.append([letter for letter in word if simulate_word.count(letter) == 0])
 
