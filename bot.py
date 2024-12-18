@@ -45,12 +45,18 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
                     word_is_possible = False
                     break
         
-        if len(incorrect_letters) > 0:
-            for letters in incorrect_letters:
-                for letter in letters:
-                    if word.count(letter) > 0:
-                        word_is_possible = False
-                        break
+            if len(incorrect_letters) > 0:
+                all_incorrect_letters_combined = [letter for letters in incorrect_letters for letter in letters]
+
+                for letter in all_incorrect_letters_combined:
+                    if letter in last_word_correct_letters:
+                        if word.count(letter) != 1:
+                            word_is_possible = False
+                            break
+                    else:
+                        if word.count(letter) > 0:
+                            word_is_possible = False
+                            break
 
         if word_is_possible:
             possible_words.append(word)
@@ -70,6 +76,7 @@ if __name__ == "__main__":
         average_guesses = 0.0
         guessed_frequency = {}
 
+#         for simulate_word in ["abuse"]:
         for simulate_word in words:
             simulate_word = simulate_word.strip()
 
@@ -82,6 +89,7 @@ if __name__ == "__main__":
             incorrect_letters = []
             
             word = "crane"
+#             word = "abyss"
 
             for i in range(12):
                 if word == simulate_word:
@@ -104,7 +112,14 @@ if __name__ == "__main__":
                         tmp_simulate_word = tmp_simulate_word.replace(letter, "", 1)
                 correct_letters.append(tmp_list)
 
-                incorrect_letters.append([letter for letter in word if simulate_word.count(letter) == 0])
+                tmp_list = []
+                tmp_simulate_word = simulate_word
+                for letter in word:
+                    if tmp_simulate_word.count(letter) == 0:
+                        tmp_list.append(letter)
+                    else:
+                        tmp_simulate_word = tmp_simulate_word.replace(letter, "", 1)
+                incorrect_letters.append(tmp_list)
 
                 [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words)
             
