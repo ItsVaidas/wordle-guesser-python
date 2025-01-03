@@ -1,13 +1,19 @@
 import random
 
-def get_best_word(words):
-    possible_words = [(word, len(set(word))) for word in words]
+def get_best_word(words, letters_frequencies):
+    possible_words = []
+    for word in words:
+        score = 0
+        for letter in word:
+            score += letters_frequencies[letter]
+
+        possible_words.append([word, score])
     possible_words = sorted(possible_words, key=lambda x: x[1], reverse=True)
     possible_words = [word[0] for word in possible_words if word[1] == possible_words[0][1]]
 
     return random.choice(possible_words)
 
-def choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words):
+def choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words, letters_frequencies):
     possible_words = []
 
     last_word = chosen_words[-1]
@@ -50,7 +56,8 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
 
                 for letter in all_incorrect_letters_combined:
                     if letter in last_word_correct_letters:
-                        if word.count(letter) != 1:
+                        count_letter_in_last_word_correct_letters = last_word_correct_letters.count(letter)
+                        if word.count(letter) != count_letter_in_last_word_correct_letters:
                             word_is_possible = False
                             break
                     else:
@@ -60,14 +67,21 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
 
         if word_is_possible:
             possible_words.append(word)
-    
-    # print("Possible words:", possible_words)
-    return [get_best_word(possible_words), possible_words]
+
+    return [get_best_word(possible_words, letters_frequencies), possible_words]
 
 if __name__ == "__main__":
 
     file = open("la-words.txt", "r")
-    words = file.readlines()
+    words = [line.rstrip() for line in file.readlines()]
+
+    letters_frequencies = {}
+    for word in words:
+        for letter in word:
+            letters_frequencies[letter] = letters_frequencies.get(letter, 0) + 1
+
+    for letter in letters_frequencies:
+        letters_frequencies[letter] = round(letters_frequencies[letter] / len(words) * 10)
 
     simulate = input("Do you want to simulate the game? (y/n): ")
 
@@ -121,7 +135,7 @@ if __name__ == "__main__":
                         tmp_simulate_word = tmp_simulate_word.replace(letter, "", 1)
                 incorrect_letters.append(tmp_list)
 
-                [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words)
+                [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words, letters_frequencies)
             
             guessed_frequency = dict(sorted(guessed_frequency.items()))
 
@@ -184,6 +198,6 @@ if __name__ == "__main__":
             correct_letters.append(current_correct_letters)
             incorrect_letters.append(current_incorrect_letters)
 
-            [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words)
+            [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words, letters_frequencies)
 
     
