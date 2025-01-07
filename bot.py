@@ -198,6 +198,8 @@ if __name__ == "__main__":
             correct_letters.append(current_correct_letters)
             incorrect_letters.append(current_incorrect_letters)
 
-            [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words, letters_frequencies)
-
-    
+            try:
+                [word, possible_words] = choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words, letters_frequencies)
+            except:
+                print("I'm sorry, I couldn't find any possible words.")
+                break
