@@ -22,6 +22,6 @@ From it the application will display the second word to enter to wordly.
 Repeat this process until you have been given the correct word.
 
 Performance:
-Current performance of this app is 3.82 average guesses.
-Average guesses:  3.8267818574514043
-Guessed frequency:  {1: 1, 2: 132, 3: 786, 4: 901, 5: 375, 6: 86, 7: 31, 8: 3}
+Current performance of this app is 3.56 average guesses.
+Average guesses:  3.56
+Guessed frequency:  {1: 1, 2: 141, 3: 1017, 4: 927, 5: 182, 6: 35, 7: 8, 8: 4}
