@@ -1,45 +1,55 @@
 import random
+from collections import defaultdict
+from math import log2
 
 
-def calculate_letter_frequencies(words):
-    """Calculate the frequency of letters in the given list of words."""
-    letters_frequencies = {}
-    for word in words:
-        for letter in word:
-            letters_frequencies[letter] = letters_frequencies.get(letter, 0) + 1
+def calculate_feedback(guess, solution):
+    """Generate feedback for a guess compared to the solution (Wordle rules)."""
+    feedback = ["w"] * 5  # Start with all incorrect ('w')
 
-    # Normalize the frequencies for scoring
-    for letter in letters_frequencies:
-        letters_frequencies[letter] = round(letters_frequencies[letter] / len(words) * 10)
-    return letters_frequencies
+    # Track remaining letters in solution for handling 'y' feedback
+    remaining_letters = list(solution)
 
+    # Mark correct positions ('g')
+    for i in range(5):
+        if guess[i] == solution[i]:
+            feedback[i] = "g"
+            remaining_letters[i] = None  # Mark this position as resolved
 
-def get_best_word(words, letters_frequencies, used_letters):
-    """Get the best word based on letter frequencies and unused letters."""
-    possible_words = []
-    for word in words:
-        score = 0
-        unique_letters = set(word)
-        for letter in unique_letters:
-            score += letters_frequencies.get(letter, 0)
-            if letter in used_letters:
-                score -= 1  # Penalize reusing guessed letters
-        possible_words.append([word, score])
+    # Mark correct letters in incorrect positions ('y')
+    for i in range(5):
+        if feedback[i] == "w" and guess[i] in remaining_letters:
+            feedback[i] = "y"
+            remaining_letters[remaining_letters.index(guess[i])] = None  # Mark this letter as used
 
-    possible_words = sorted(possible_words, key=lambda x: x[1], reverse=True)
-    best_score = possible_words[0][1]
-    return random.choice([word[0] for word in possible_words if word[1] == best_score])
+    return "".join(feedback)
 
 
-def choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words, letters_frequencies):
-    """Choose the next best word based on feedback."""
-    possible_words = []
-    used_letters = set("".join(chosen_words))
+def calculate_entropy(word, possible_words):
+    """Calculate the entropy of a word based on its feedback groups."""
+    feedback_groups = defaultdict(list)
+
+    for solution in possible_words:
+        feedback = calculate_feedback(word, solution)
+        feedback_groups[feedback].append(solution)
+
+    # Compute the entropy
+    entropy = 0
+    total_words = len(possible_words)
+    for group in feedback_groups.values():
+        probability = len(group) / total_words
+        entropy -= probability * log2(probability)
+
+    return entropy
+
+
+def filter_possible_words(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words):
+    """Filter the list of possible words based on known constraints."""
+    filtered_words = []
 
     last_word = chosen_words[-1]
 
     for word in words:
-        word = word.strip()
         word_is_possible = True
 
         # Check correct positions (green feedback)
@@ -75,19 +85,28 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
                     break
 
         if word_is_possible:
-            possible_words.append(word)
+            filtered_words.append(word)
+
+    return filtered_words
+
+
+def choose_next_word(chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words):
+    """Choose the next best word using entropy-based scoring and constraints."""
+    possible_words = filter_possible_words(
+        chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words
+    )
 
     if not possible_words:
-        raise ValueError("No possible words found!")
+        raise ValueError("No possible words left!")
 
-    return [get_best_word(possible_words, letters_frequencies, used_letters), possible_words]
+    best_word = max(possible_words, key=lambda word: calculate_entropy(word, possible_words))
+    return best_word, possible_words
 
 
 if __name__ == "__main__":
     with open("la-words.txt", "r") as file:
         words = [line.strip() for line in file.readlines()]
 
-    letters_frequencies = calculate_letter_frequencies(words)
     simulate = input("Do you want to simulate the game? (y/n): ")
 
     if simulate == "y":
@@ -95,7 +114,7 @@ if __name__ == "__main__":
         average_guesses = 0.0
         guessed_frequency = {}
 
-        for simulate_word in words:  # Limit for testing
+        for simulate_word in words:  # Limit to 100 words for testing
             simulate_word = simulate_word.strip()
 
             possible_words = words.copy()
@@ -134,18 +153,25 @@ if __name__ == "__main__":
 
                 try:
                     word, possible_words = choose_next_word(
-                        chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words, letters_frequencies
+                        chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words
                     )
                 except ValueError:
                     print(f"Simulation failed for word: {simulate_word}")
                     break
 
             guessed_frequency = dict(sorted(guessed_frequency.items()))
-            print("Average guesses: ", average_guesses / count, "\r", end="")
-            print("Guessed frequency: ", guessed_frequency, "\r", end="")
 
-        print("\nAverage guesses: ", average_guesses / count)
-        print("Guessed frequency: ", guessed_frequency)
+            # Print live statistics
+            if count > 0:
+                print("Average guesses: ", round(average_guesses / count, 2), "\r", end="")
+                print("Guessed frequency: ", guessed_frequency, "\r", end="")
+
+        if count > 0:
+            print("\nFinal statistics:")
+            print("Average guesses: ", round(average_guesses / count, 2))
+            print("Guessed frequency: ", guessed_frequency)
+        else:
+            print("No successful simulations. Check the code or input data.")
 
     else:
         chosen_words = []
@@ -199,7 +225,7 @@ if __name__ == "__main__":
 
             try:
                 word, possible_words = choose_next_word(
-                    chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words, letters_frequencies
+                    chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words
                 )
             except ValueError:
                 print("I'm sorry, I couldn't find any possible words.")
