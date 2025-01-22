@@ -23,5 +23,7 @@ Repeat this process until you have been given the correct word.
 
 Performance:
 Current performance of this app is 3.56 average guesses.
+
 Average guesses:  3.56
+
 Guessed frequency:  {1: 1, 2: 141, 3: 1017, 4: 927, 5: 182, 6: 35, 7: 8, 8: 4}
