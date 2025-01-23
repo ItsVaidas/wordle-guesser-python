@@ -83,6 +83,9 @@ def filter_possible_words(chosen_words, correct_positions, incorrect_positions, 
                 if word.count(letter) > 0 and letter not in last_word_correct_letters:
                     word_is_possible = False
                     break
+                elif word.count(letter) > 0 and letter in last_word_correct_letters:
+                    if word.count(letter) != last_word_correct_letters.count(letter):
+                        word_is_possible = False
 
         if word_is_possible:
             filtered_words.append(word)
