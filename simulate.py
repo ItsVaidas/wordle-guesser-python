@@ -1,15 +1,15 @@
-import random
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from multiprocessing import Process, Manager
 from collections import defaultdict
 from math import log2
-import concurrent.futures
-from multiprocessing import Manager
+import matplotlib
+from sympy.physics.control.control_plots import plt
 
-fig, ax = plt.subplots(figsize=(10, 6))
+matplotlib.interactive(True)
+from matplotlib.figure import Figure
 
-manager = Manager()
-frequancies = manager.dict()
+matplotlib.use('TkAgg')
+
+current_stats = {}
 
 def calculate_feedback(guess, solution):
     """Generate feedback for a guess compared to the solution (Wordle rules)."""
@@ -113,150 +113,115 @@ def choose_next_word(chosen_words, correct_positions, incorrect_positions, corre
     best_word = max(possible_words, key=lambda word: calculate_entropy(word, possible_words))
     return best_word, possible_words
 
-def simulate_word(initial_word,):
-    frequancies[initial_word] = {}
-
+def simulate(initial_word, words, current_stats):
     count = 0
     average_guesses = 0.0
     guessed_frequency = {}
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = [executor.submit(get_score, initial_word, simulate_word) for simulate_word in words[:100]]
+    for simulate_word in words:  # Limit to 100 words for testing
+        simulate_word = simulate_word.strip()
 
-        for f in concurrent.futures.as_completed(results):
-            count += 1
-            average_guesses += f.result()
-
-    average_guesses /= count
-
-    return initial_word, count, average_guesses, guessed_frequency
-
-def get_score(initial_word, simulate_word):
-    took_guesses = 0
-
-    simulate_word = simulate_word.strip()
-
-    possible_words = words.copy()
-    chosen_words = []
-    correct_positions = []
-    incorrect_positions = []
-    correct_letters = []
-    incorrect_letters = []
-
-    word = initial_word  # First guess, can be adjusted
-
-    for i in range(12):
-        if word == simulate_word:
-            took_guesses = i + 1
-            break
-
-        chosen_words.append(word)
-        correct_positions.append([pos for pos in range(5) if simulate_word[pos] == word[pos]])
-        incorrect_positions.append([pos for pos in range(5) if simulate_word[pos] != word[pos]])
-
-        # Update correct/incorrect letters
-        tmp_simulate_word = simulate_word
-        current_correct_letters = []
-        current_incorrect_letters = []
-        for letter in word:
-            if tmp_simulate_word.count(letter) > 0:
-                current_correct_letters.append(letter)
-                tmp_simulate_word = tmp_simulate_word.replace(letter, "", 1)
-            else:
-                current_incorrect_letters.append(letter)
-
-        correct_letters.append(current_correct_letters)
-        incorrect_letters.append(current_incorrect_letters)
-
-        try:
-            word, possible_words = choose_next_word(
-                chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words
-            )
-        except ValueError:
-            print(f"Simulation failed for word: {simulate_word}")
-            break
-
-    frequancies[initial_word][took_guesses] = frequancies[initial_word].get(took_guesses, 0) + 1
-
-    return took_guesses
-
-if __name__ == "__main__":
-    with open("la-words.txt", "r") as file:
-        words = [line.strip() for line in file.readlines()]
-
-    simulate = input("Do you want to simulate the game? (y/n): ")
-
-    if simulate == "y":
-
-        best_performing_word = None
-        best_performing_word_average_guesses = 10000000
-
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = [executor.submit(simulate_word, initial_word) for initial_word in words[:100]]
-
-            for f in concurrent.futures.as_completed(results):
-                initial_word, count, average_guesses, guessed_frequency = f.result()
-
-                if average_guesses < best_performing_word_average_guesses:
-                    best_performing_word = initial_word
-                    best_performing_word_average_guesses = average_guesses / count
-
-        print(f"Best performing word: {best_performing_word}")
-
-    else:
+        possible_words = words.copy()
         chosen_words = []
         correct_positions = []
         incorrect_positions = []
         correct_letters = []
         incorrect_letters = []
-        possible_words = words.copy()
-        word = "crane"  # First guess
 
-        print("When asked to enter shown result, please use the following key:")
-        print("w: Incorrect letter")
-        print("g: Correct letter in correct position")
-        print("y: Correct letter in incorrect position")
-        print("Example: wgywg")
+        word = initial_word  # First guess, can be adjusted
 
         for i in range(12):
-            chosen_words.append(word)
-
-            if len(possible_words) < 10:
-                print("Possible words:", possible_words)
-
-            print("Please write the word: ", word)
-            input_sequence = input("Enter shown result:\n")
-
-            if input_sequence == "ggggg":
-                print(f"Congratulations! I guessed the word in {i + 1} guesses.")
+            if word == simulate_word:
+                average_guesses += i + 1
+                count += 1
+                guessed_frequency[i + 1] = guessed_frequency.get(i + 1, 0) + 1
                 break
 
+            chosen_words.append(word)
+            correct_positions.append([pos for pos in range(5) if simulate_word[pos] == word[pos]])
+            incorrect_positions.append([pos for pos in range(5) if simulate_word[pos] != word[pos]])
+
+            # Update correct/incorrect letters
+            tmp_simulate_word = simulate_word
             current_correct_letters = []
-            current_correct_positions = []
-            current_incorrect_positions = []
             current_incorrect_letters = []
-
-            for index, letter in enumerate(input_sequence):
-                if letter == "w":
-                    current_incorrect_letters.append(word[index])
-                elif letter == "g":
-                    current_correct_positions.append(index)
-                    current_correct_letters.append(word[index])
-                elif letter == "y":
-                    current_incorrect_positions.append(index)
-                    current_correct_letters.append(word[index])
+            for letter in word:
+                if tmp_simulate_word.count(letter) > 0:
+                    current_correct_letters.append(letter)
+                    tmp_simulate_word = tmp_simulate_word.replace(letter, "", 1)
                 else:
-                    print("Invalid input")
+                    current_incorrect_letters.append(letter)
 
-            correct_positions.append(current_correct_positions)
-            incorrect_positions.append(current_incorrect_positions)
             correct_letters.append(current_correct_letters)
             incorrect_letters.append(current_incorrect_letters)
 
             try:
                 word, possible_words = choose_next_word(
-                    chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, words
+                    chosen_words, correct_positions, incorrect_positions, correct_letters, incorrect_letters, possible_words
                 )
             except ValueError:
-                print("I'm sorry, I couldn't find any possible words.")
+                print(f"Simulation failed for word: {simulate_word}")
                 break
+
+        current_stats[initial_word] = round(average_guesses / count, 2)
+
+    return round(average_guesses / count, 2)
+
+# Function to calculate feedback and entropy remains the same
+
+def show_stats(current_stats):
+    while True:
+        plt.clf()
+
+        sorted_stats = sorted(current_stats.items(), key=lambda x: x[1])[:10]
+        www, scores = zip(*sorted_stats) if sorted_stats else ([], [])
+
+        plt.bar(www, scores)
+
+        for i in range(len(www)):
+            plt.text(i, scores[i], scores[i], ha='center', va='bottom')
+
+        plt.pause(2)  # Make this as low as possible
+        plt.gcf().canvas.flush_events()  # Force GUI to update
+
+
+if __name__ == "__main__":
+    with Manager() as manager:
+        current_stats = manager.dict()
+
+        with open("la-words.txt", "r") as file:
+            words = [line.strip() for line in file.readlines()]
+
+
+            show_stats_process = Process(target=show_stats, args=(current_stats,))
+            show_stats_process.start()
+
+
+            print("Starting simulation")
+            threads = []
+
+            for initial_word in words[:5]:
+                threads.append(Process(target=simulate, args=(initial_word, words, current_stats)))
+
+            current_threads = []
+            i = 0
+
+            while i < len(threads):
+                if len(current_threads) < 10:
+                    threads[i].start()
+                    current_threads.append(threads[i])
+                    i += 1
+                else:
+                    for t in current_threads:
+                        t.join()
+                    current_threads = []
+
+            for t in current_threads:
+                t.join()
+
+            print("Simulation ended")
+
+            best = min(current_stats, key=current_stats.get)
+
+            print(f"\nBest word: {best}")
+            print(f"Best score: {current_stats[best]}")
